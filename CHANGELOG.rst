@@ -10,8 +10,8 @@ v1.0.3
 Minor Changes
 -------------
 
-- fix some string formatting in snmp_facts.py
-- fix some usage of imports in snmp_facts.py that were still referencing the old `pysnmp-lextudio` dependency instead of the new `pysnmp` dependency. This includes import paths, constant names, and error messages. All names have been verified against `pysnmp>=6.2.0,<7.0.0`.
+- fix missing Python dependency `pysnmp` (>= 6.2.0, < 7.0.0) across CI, development dependencies, documentation, and runtime guidance.
+- update changelog config to keep fragments and use nice YAML formatting for changelog.yaml
 
 v1.0.1
 ======
