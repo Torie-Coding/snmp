@@ -4,6 +4,15 @@ Torie\_Coding.Snmp Release Notes
 
 .. contents:: Topics
 
+v1.0.3
+======
+
+Minor Changes
+-------------
+
+- fix some string formatting in snmp_facts.py
+- fix some usage of imports in snmp_facts.py that were still referencing the old `pysnmp-lextudio` dependency instead of the new `pysnmp` dependency. This includes import paths, constant names, and error messages. All names have been verified against `pysnmp>=6.2.0,<7.0.0`.
+
 v1.0.1
 ======
 
