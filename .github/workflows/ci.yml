@@ -70,7 +70,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install ansible-core 'pysnmp-lextudio>=6.1,<8' pytest pytest-mock
+          pip install ansible-core 'pysnmp>=6.2.0,<7.0.0' pytest pytest-mock
 
       - name: Run unit tests
         working-directory: ansible_collections/torie_coding/snmp
@@ -143,7 +143,7 @@ jobs:
           python-version: "3.12"
 
       - name: Install dependencies
-        run: pip install pylint ansible-core 'pysnmp-lextudio>=6.1,<8'
+        run: pip install pylint ansible-core 'pysnmp>=6.2.0,<7.0.0'
 
       - name: Run pylint on all modules
         run: >-

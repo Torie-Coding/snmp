@@ -1,7 +1,7 @@
 ---
 namespace: torie_coding
 name: snmp
-version: 1.0.0
+version: 1.0.1
 readme: README.md
 authors:
   - Torie-Coding
@@ -11,7 +11,6 @@ description: >-
   and privacy.
 license:
   - GPL-3.0-or-later
-license_file: LICENSE
 tags:
   - snmp
   - network

@@ -14,4 +14,4 @@ pytest-mock>=3.0
 molecule>=6.0
 molecule-plugins[docker]>=23.0
 pylint>=3.0
-pysnmp-lextudio>=6.1,<8
+pysnmp>=6.2.0,<7.0.0

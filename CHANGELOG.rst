@@ -4,6 +4,14 @@ Torie\_Coding.Snmp Release Notes
 
 .. contents:: Topics
 
+v1.0.1
+======
+
+Minor Changes
+-------------
+
+- replace the deprecated Python dependency `pysnmp-lextudio` with `pysnmp>=6.2.0,<7.0.0` across CI, development dependencies, documentation, and runtime guidance.
+
 v1.0.0
 ======
 

@@ -16,3 +16,11 @@ releases:
     - add-snmp-get-walk.yaml
     - initial-release.yaml
     release_date: '2026-03-31'
+  1.0.1:
+    changes:
+      minor_changes:
+      - replace the deprecated Python dependency `pysnmp-lextudio` with `pysnmp>=6.2.0,<7.0.0`
+        across CI, development dependencies, documentation, and runtime guidance.
+    fragments:
+    - switch-to-pysnmp.yaml
+    release_date: '2026-03-31'
