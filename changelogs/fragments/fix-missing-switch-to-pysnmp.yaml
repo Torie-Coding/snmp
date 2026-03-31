@@ -1,0 +1,2 @@
+minor_changes:
+  - fix missing Python dependency `pysnmp` (>= 6.2.0, < 7.0.0) across CI, development dependencies, documentation, and runtime guidance.

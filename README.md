@@ -17,7 +17,7 @@ Ansible collection for gathering SNMP facts from network devices using native Py
 
 - **Ansible**: `ansible-core >= 2.15`
 - **Python**: 3.10+ (on the Ansible controller)
-- **PySNMP**: `pysnmp-lextudio >= 6.1, < 8`
+- **PySNMP**: `pysnmp>=6.2.0,<7.0.0`
 
 Install the runtime dependency on the Ansible controller:
 
@@ -25,7 +25,7 @@ Install the runtime dependency on the Ansible controller:
 pip install 'pysnmp>=6.2.0,<7.0.0'
 ```
 
-> **Note:** If `pysnmp-lextudio` is not installed, the module will fail immediately
+> **Note:** If `pysnmp>=6.2.0,<7.0.0` is not installed, the module will fail immediately
 > with a clear error message telling you how to install it.
 
 ## Installation

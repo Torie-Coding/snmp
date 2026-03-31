@@ -24,7 +24,7 @@ description:
   - Runs on the Ansible controller (connection is SNMP, not SSH).
   - All OID keys are returned in numeric dotted notation.
 requirements:
-  - "pysnmp-lextudio >= 6.1, < 8"
+  - "pysnmp>=6.2.0,<7.0.0"
 options:
   host:
     description:
@@ -242,11 +242,11 @@ def main():
     if not HAS_PYSNMP:
         module.fail_json(
             msg=(
-                "Missing required Python library 'pysnmp-lextudio' (>= 6.1). "
-                "Install it on the Ansible controller: "
-                "pip install 'pysnmp>=6.2.0,<7.0.0'. "
-                "Import error: {0}"
-            ).format(PYSNMP_IMPORT_ERROR)
+                f"Missing required Python library 'pysnmp' (>= 6.2.0, < 7.0.0). "
+                f"Install it on the Ansible controller: "
+                f"pip install 'pysnmp>=6.2.0,<7.0.0'. "
+                f"Import error: {PYSNMP_IMPORT_ERROR}"
+            )
         )
 
     from ansible_collections.torie_coding.snmp.plugins.module_utils.snmp_poller import (  # pylint: disable=import-outside-toplevel,import-error

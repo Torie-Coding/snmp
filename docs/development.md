@@ -19,7 +19,7 @@ pip install -r requirements-dev.txt
 
 ### Runtime
 
-The only runtime Python dependency is `pysnmp-lextudio >= 6.1, < 8`.
+The only runtime Python dependency is `pysnmp>=6.2.0,<7.0.0`.
 
 - Documented in `README.md` and module `DOCUMENTATION.requirements`.
 - Enforced by a fail-fast `try/except ImportError` guard in the module.

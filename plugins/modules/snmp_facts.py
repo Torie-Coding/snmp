@@ -24,7 +24,7 @@ description:
   - Use I(gather_subset) to control which fact categories are collected.
     By default all categories are gathered, preserving backward compatibility.
 requirements:
-  - "pysnmp-lextudio >= 6.1, < 8"
+  - "pysnmp>=6.2.0,<7.0.0"
 options:
   host:
     description:
@@ -189,7 +189,7 @@ ansible_facts:
 from ansible.module_utils.basic import AnsibleModule
 
 # PySNMP import path and constant mappings.
-# All names verified against pysnmp-lextudio 6.3.x (pysnmp.hlapi.asyncio).
+# All names verified against pysnmp>=6.2.0,<7.0.0 (pysnmp.hlapi.asyncio).
 HAS_PYSNMP = True
 PYSNMP_IMPORT_ERROR = None
 try:
@@ -461,7 +461,7 @@ def main():
     if not HAS_PYSNMP:
         module.fail_json(
             msg=(
-                "Missing required Python library 'pysnmp-lextudio' (>= 6.1). "
+                "Missing required Python library 'pysnmp' (>= 6.2.0, < 7.0.0). "
                 "Install it on the Ansible controller: "
                 "pip install 'pysnmp>=6.2.0,<7.0.0'. "
                 "Import error: {0}"

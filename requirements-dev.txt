@@ -1,7 +1,7 @@
 # Development and testing dependencies only.
 # NOT shipped with the collection artifact (excluded via build_ignore in galaxy.yml).
 #
-# Runtime dependency: pysnmp-lextudio>=6.1,<8
+# Runtime dependency: pysnmp>=6.2.0,<7.0.0
 # Runtime deps are documented in README.md and enforced by a fail-fast import
 # guard in the module. They are NOT listed here to keep the separation clear.
 #
