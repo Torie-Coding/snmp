@@ -1,0 +1,38 @@
+---
+namespace: torie_coding
+name: snmp
+version: 0.1.0
+readme: README.md
+authors:
+  - Torie-Coding
+description: >-
+  Ansible collection for gathering SNMP facts from network devices using
+  native PySNMP. Supports SNMPv2c and SNMPv3 with SHA/SHA-256/AES authentication
+  and privacy.
+license:
+  - GPL-3.0-or-later
+license_file: LICENSE
+tags:
+  - snmp
+  - network
+  - monitoring
+  - facts
+dependencies: {}
+repository: https://github.com/Torie-Coding/snmp
+documentation: https://github.com/Torie-Coding/snmp/tree/main/docs
+homepage: https://github.com/Torie-Coding/snmp
+issues: https://github.com/Torie-Coding/snmp/issues
+
+# Exclude development/CI files from the built collection artifact.
+# Only ship what collection consumers need.
+build_ignore:
+  - .github
+  - .gitignore
+  - .pytest_cache
+  - docker
+  - molecule
+  - tests
+  - docs
+  - requirements-dev.txt
+  - CONTRIBUTING.md
+  - "*.tar.gz"

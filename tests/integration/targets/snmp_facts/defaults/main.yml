@@ -1,0 +1,4 @@
+---
+snmp_host: 127.0.0.1
+snmp_port: 1161
+snmp_community: public

@@ -1,0 +1,5 @@
+---
+# Integration test target for snmp_facts.
+# Can be run with: ansible-test integration snmp_facts
+# Requires a running SNMP agent accessible at the configured host/port.
+dependencies: []

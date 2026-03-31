@@ -1,0 +1,65 @@
+---
+# Molecule converge playbook.
+# Exercises snmp_facts, snmp_get, and snmp_walk against the test SNMP agent.
+- name: Gather SNMP facts from test agent
+  hosts: localhost
+  connection: local
+  gather_facts: false
+
+  tasks:
+    - name: Gather facts via SNMPv2c
+      torie_coding.snmp.snmp_facts:
+        host: 127.0.0.1
+        port: 1161
+        version: v2c
+        community: public
+      register: snmp_v2c_result
+
+    - name: Gather facts via SNMPv3 authPriv (SHA + AES)
+      torie_coding.snmp.snmp_facts:
+        host: 127.0.0.1
+        port: 1161
+        version: v3
+        username: testuser
+        level: authPriv
+        integrity: sha
+        authkey: authpass123456
+        privacy: aes
+        privkey: privpass123456
+      register: snmp_v3_sha_result
+
+    - name: Gather facts via SNMPv3 authPriv (SHA-256 + AES)
+      torie_coding.snmp.snmp_facts:
+        host: 127.0.0.1
+        port: 1161
+        version: v3
+        username: testuser256
+        level: authPriv
+        integrity: sha256
+        authkey: authpass123456
+        privacy: aes
+        privkey: privpass123456
+      register: snmp_v3_sha256_result
+
+    # --- snmp_get ---
+    - name: GET sysName and sysUpTime via v2c
+      torie_coding.snmp.snmp_get:
+        host: 127.0.0.1
+        port: 1161
+        version: v2c
+        community: public
+        oids:
+          - 1.3.6.1.2.1.1.5.0
+          - 1.3.6.1.2.1.1.3.0
+      register: snmp_get_result
+
+    # --- snmp_walk ---
+    - name: WALK sysGroup via v2c
+      torie_coding.snmp.snmp_walk:
+        host: 127.0.0.1
+        port: 1161
+        version: v2c
+        community: public
+        oids:
+          - 1.3.6.1.2.1.1
+      register: snmp_walk_result

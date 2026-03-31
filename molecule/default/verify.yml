@@ -1,0 +1,283 @@
+---
+# Molecule verify playbook.
+# Asserts the facts returned by snmp_facts, snmp_get, and snmp_walk are correct.
+# The modules are invoked here (not only in converge) because Molecule runs
+# verify.yml as a separate playbook, so registered variables from
+# converge.yml are not available.
+- name: Verify SNMP modules
+  hosts: localhost
+  connection: local
+  gather_facts: false
+
+  tasks:
+    # ===================================================================
+    # snmp_facts
+    # ===================================================================
+
+    # --- Gather facts for each scenario ---
+    - name: Gather facts via SNMPv2c
+      torie_coding.snmp.snmp_facts:
+        host: 127.0.0.1
+        port: 1161
+        version: v2c
+        community: public
+      register: snmp_v2c_result
+
+    - name: Gather facts via SNMPv3 authPriv (SHA + AES)
+      torie_coding.snmp.snmp_facts:
+        host: 127.0.0.1
+        port: 1161
+        version: v3
+        username: testuser
+        level: authPriv
+        integrity: sha
+        authkey: authpass123456
+        privacy: aes
+        privkey: privpass123456
+      register: snmp_v3_sha_result
+
+    - name: Gather facts via SNMPv3 authPriv (SHA-256 + AES)
+      torie_coding.snmp.snmp_facts:
+        host: 127.0.0.1
+        port: 1161
+        version: v3
+        username: testuser256
+        level: authPriv
+        integrity: sha256
+        authkey: authpass123456
+        privacy: aes
+        privkey: privpass123456
+      register: snmp_v3_sha256_result
+
+    # --- SNMPv2c assertions ---
+    - name: Assert v2c returned ansible_sysname
+      ansible.builtin.assert:
+        that:
+          - snmp_v2c_result.ansible_facts.ansible_sysname is defined
+          - snmp_v2c_result.ansible_facts.ansible_sysname | length > 0
+        fail_msg: "ansible_sysname was not returned or is empty (v2c)"
+
+    - name: Assert v2c returned ansible_sysdescr
+      ansible.builtin.assert:
+        that:
+          - snmp_v2c_result.ansible_facts.ansible_sysdescr is defined
+          - snmp_v2c_result.ansible_facts.ansible_sysdescr | length > 0
+        fail_msg: "ansible_sysdescr was not returned or is empty (v2c)"
+
+    - name: Assert v2c returned ansible_all_ipv4_addresses as list
+      ansible.builtin.assert:
+        that:
+          - snmp_v2c_result.ansible_facts.ansible_all_ipv4_addresses is defined
+          - snmp_v2c_result.ansible_facts.ansible_all_ipv4_addresses is iterable
+        fail_msg: "ansible_all_ipv4_addresses was not returned or is not a list (v2c)"
+
+    - name: Assert v2c returned ansible_interfaces as dict
+      ansible.builtin.assert:
+        that:
+          - snmp_v2c_result.ansible_facts.ansible_interfaces is defined
+          - snmp_v2c_result.ansible_facts.ansible_interfaces is mapping
+        fail_msg: "ansible_interfaces was not returned or is not a dict (v2c)"
+
+    # --- SNMPv3 SHA assertions ---
+    - name: Assert v3 SHA returned ansible_sysname
+      ansible.builtin.assert:
+        that:
+          - snmp_v3_sha_result.ansible_facts.ansible_sysname is defined
+          - snmp_v3_sha_result.ansible_facts.ansible_sysname | length > 0
+        fail_msg: "ansible_sysname was not returned or is empty (v3/SHA)"
+
+    - name: Assert v3 SHA returned ansible_interfaces
+      ansible.builtin.assert:
+        that:
+          - snmp_v3_sha_result.ansible_facts.ansible_interfaces is defined
+          - snmp_v3_sha_result.ansible_facts.ansible_interfaces is mapping
+        fail_msg: "ansible_interfaces was not returned or is not a dict (v3/SHA)"
+
+    # --- SNMPv3 SHA-256 assertions ---
+    - name: Assert v3 SHA-256 returned ansible_sysname
+      ansible.builtin.assert:
+        that:
+          - snmp_v3_sha256_result.ansible_facts.ansible_sysname is defined
+          - snmp_v3_sha256_result.ansible_facts.ansible_sysname | length > 0
+        fail_msg: "ansible_sysname was not returned or is empty (v3/SHA-256)"
+
+    - name: Assert v3 SHA-256 returned all scalar facts
+      ansible.builtin.assert:
+        that:
+          - snmp_v3_sha256_result.ansible_facts.ansible_sysdescr is defined
+          - snmp_v3_sha256_result.ansible_facts.ansible_sysobjectid is defined
+          - snmp_v3_sha256_result.ansible_facts.ansible_sysuptime is defined
+          - snmp_v3_sha256_result.ansible_facts.ansible_syscontact is defined
+          - snmp_v3_sha256_result.ansible_facts.ansible_syslocation is defined
+        fail_msg: "Not all scalar facts were returned (v3/SHA-256)"
+
+    - name: Assert v3 SHA-256 returned ansible_interfaces as dict
+      ansible.builtin.assert:
+        that:
+          - snmp_v3_sha256_result.ansible_facts.ansible_interfaces is defined
+          - snmp_v3_sha256_result.ansible_facts.ansible_interfaces is mapping
+        fail_msg: "ansible_interfaces was not returned or is not a dict (v3/SHA-256)"
+
+    - name: Assert v3 SHA-256 returned ansible_all_ipv4_addresses as list
+      ansible.builtin.assert:
+        that:
+          - snmp_v3_sha256_result.ansible_facts.ansible_all_ipv4_addresses is defined
+          - snmp_v3_sha256_result.ansible_facts.ansible_all_ipv4_addresses is iterable
+        fail_msg: "ansible_all_ipv4_addresses was not returned or is not a list (v3/SHA-256)"
+
+    # ===================================================================
+    # snmp_facts — gather_subset selective gathering
+    # ===================================================================
+
+    - name: Gather only system subset
+      torie_coding.snmp.snmp_facts:
+        host: 127.0.0.1
+        port: 1161
+        version: v2c
+        community: public
+        gather_subset:
+          - system
+      register: subset_system_result
+
+    - name: Assert system subset returned scalar facts
+      ansible.builtin.assert:
+        that:
+          - subset_system_result.ansible_facts.ansible_sysname is defined
+          - subset_system_result.ansible_facts.ansible_sysdescr is defined
+        fail_msg: "system subset did not return expected scalar facts"
+
+    - name: Assert system subset did not return interfaces or ipv4
+      ansible.builtin.assert:
+        that:
+          - subset_system_result.ansible_facts.ansible_interfaces is not defined
+          - subset_system_result.ansible_facts.ansible_all_ipv4_addresses is not defined
+        fail_msg: "system-only subset should not return interfaces or ipv4 facts"
+
+    - name: Gather only interfaces subset
+      torie_coding.snmp.snmp_facts:
+        host: 127.0.0.1
+        port: 1161
+        version: v2c
+        community: public
+        gather_subset:
+          - interfaces
+      register: subset_interfaces_result
+
+    - name: Assert interfaces subset returned ansible_interfaces
+      ansible.builtin.assert:
+        that:
+          - subset_interfaces_result.ansible_facts.ansible_interfaces is defined
+          - subset_interfaces_result.ansible_facts.ansible_interfaces is mapping
+        fail_msg: "interfaces subset did not return ansible_interfaces"
+
+    - name: Assert interfaces subset did not return system or ipv4
+      ansible.builtin.assert:
+        that:
+          - subset_interfaces_result.ansible_facts.ansible_sysname is not defined
+          - subset_interfaces_result.ansible_facts.ansible_all_ipv4_addresses is not defined
+        fail_msg: "interfaces-only subset should not return system or ipv4 facts"
+
+    - name: Gather only ipv4 subset
+      torie_coding.snmp.snmp_facts:
+        host: 127.0.0.1
+        port: 1161
+        version: v2c
+        community: public
+        gather_subset:
+          - ipv4
+      register: subset_ipv4_result
+
+    - name: Assert ipv4 subset returned ansible_all_ipv4_addresses
+      ansible.builtin.assert:
+        that:
+          - subset_ipv4_result.ansible_facts.ansible_all_ipv4_addresses is defined
+          - subset_ipv4_result.ansible_facts.ansible_all_ipv4_addresses is iterable
+        fail_msg: "ipv4 subset did not return ansible_all_ipv4_addresses"
+
+    - name: Assert ipv4 subset did not return system or interfaces
+      ansible.builtin.assert:
+        that:
+          - subset_ipv4_result.ansible_facts.ansible_sysname is not defined
+          - subset_ipv4_result.ansible_facts.ansible_interfaces is not defined
+        fail_msg: "ipv4-only subset should not return system or interfaces facts"
+
+    # ===================================================================
+    # snmp_get
+    # ===================================================================
+
+    - name: GET sysName and sysUpTime via v2c
+      torie_coding.snmp.snmp_get:
+        host: 127.0.0.1
+        port: 1161
+        version: v2c
+        community: public
+        oids:
+          - 1.3.6.1.2.1.1.5.0
+          - 1.3.6.1.2.1.1.3.0
+      register: snmp_get_result
+
+    - name: Assert snmp_get returned results list
+      ansible.builtin.assert:
+        that:
+          - snmp_get_result.results is defined
+          - snmp_get_result.results | length == 2
+        fail_msg: "snmp_get did not return 2 results"
+
+    - name: Assert snmp_get returned snmp_value dict
+      ansible.builtin.assert:
+        that:
+          - snmp_get_result.snmp_value is defined
+          - snmp_get_result.snmp_value is mapping
+          - "'1.3.6.1.2.1.1.5.0' in snmp_get_result.snmp_value"
+        fail_msg: "snmp_get snmp_value dict is missing or incomplete"
+
+    - name: Assert snmp_get results have expected keys
+      ansible.builtin.assert:
+        that:
+          - snmp_get_result.results[0].oid is defined
+          - snmp_get_result.results[0].value is defined
+          - snmp_get_result.results[0].type is defined
+        fail_msg: "snmp_get result entries are missing expected keys"
+
+    # ===================================================================
+    # snmp_walk
+    # ===================================================================
+
+    - name: WALK sysGroup via v2c
+      torie_coding.snmp.snmp_walk:
+        host: 127.0.0.1
+        port: 1161
+        version: v2c
+        community: public
+        oids:
+          - 1.3.6.1.2.1.1
+      register: snmp_walk_result
+
+    - name: Assert snmp_walk returned results list
+      ansible.builtin.assert:
+        that:
+          - snmp_walk_result.results is defined
+          - snmp_walk_result.results | length > 0
+        fail_msg: "snmp_walk returned no results"
+
+    - name: Assert snmp_walk returned result_count
+      ansible.builtin.assert:
+        that:
+          - snmp_walk_result.result_count is defined
+          - snmp_walk_result.result_count > 0
+        fail_msg: "snmp_walk result_count is missing or zero"
+
+    - name: Assert snmp_walk returned snmp_value dict
+      ansible.builtin.assert:
+        that:
+          - snmp_walk_result.snmp_value is defined
+          - snmp_walk_result.snmp_value is mapping
+        fail_msg: "snmp_walk snmp_value is missing or not a dict"
+
+    - name: Assert snmp_walk result entries have expected keys
+      ansible.builtin.assert:
+        that:
+          - snmp_walk_result.results[0].oid is defined
+          - snmp_walk_result.results[0].value is defined
+          - snmp_walk_result.results[0].type is defined
+        fail_msg: "snmp_walk result entries are missing expected keys"

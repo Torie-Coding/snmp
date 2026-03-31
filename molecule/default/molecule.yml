@@ -1,0 +1,20 @@
+---
+# Molecule default scenario for torie_coding.snmp
+# Tests snmp_facts module against a real SNMP agent in Docker.
+dependency:
+  name: galaxy
+driver:
+  name: docker
+platforms:
+  - name: snmp-agent
+    image: "snmp-test-agent:latest"
+    pre_build_image: true
+    published_ports:
+      - "0.0.0.0:1161:161/udp"
+    command: "/usr/sbin/snmpd -f -Lo"
+provisioner:
+  name: ansible
+  env:
+    ANSIBLE_COLLECTIONS_PATH: "${ANSIBLE_COLLECTIONS_PATH:-~/.ansible/collections}"
+verifier:
+  name: ansible

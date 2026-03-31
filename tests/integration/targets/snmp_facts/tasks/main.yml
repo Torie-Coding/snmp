@@ -1,0 +1,20 @@
+---
+- name: Gather SNMP facts via v2c
+  torie_coding.snmp.snmp_facts:
+    host: "{{ snmp_host }}"
+    port: "{{ snmp_port }}"
+    version: v2c
+    community: "{{ snmp_community }}"
+  register: snmp_result
+
+- name: Assert sysName is returned
+  ansible.builtin.assert:
+    that:
+      - snmp_result.ansible_facts.ansible_sysname is defined
+    fail_msg: "ansible_sysname was not returned"
+
+- name: Assert interfaces are returned as dict
+  ansible.builtin.assert:
+    that:
+      - snmp_result.ansible_facts.ansible_interfaces is mapping
+    fail_msg: "ansible_interfaces is not a dict"

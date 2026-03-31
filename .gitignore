@@ -1,0 +1,34 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Virtual environments
+.venv/
+venv/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Ansible collection build artifacts
+*.tar.gz
+
+# Molecule
+molecule/**/instance_config.yml
+
+# OS
+.DS_Store
+Thumbs.db
+
+# plays
+play*.yml
+play*.yaml
+
+# Ansible
+.ansible

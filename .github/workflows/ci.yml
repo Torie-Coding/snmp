@@ -1,0 +1,153 @@
+---
+name: CI
+
+on:
+  push:
+    branches: [main, dev, "feature/**", "fix/**"]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install -r requirements-dev.txt
+
+      - name: Run ansible-lint
+        run: ansible-lint
+
+  sanity:
+    name: Sanity
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - ansible-core: "2.15"
+            python-version: "3.11"
+          - ansible-core: "2.16"
+            python-version: "3.12"
+          - ansible-core: "2.17"
+            python-version: "3.12"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: ansible_collections/torie_coding/snmp
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "${{ matrix.python-version }}"
+
+      - name: Install ansible-core
+        run: pip install "ansible-core~=${{ matrix.ansible-core }}.0"
+
+      - name: Run ansible-test sanity
+        working-directory: ansible_collections/torie_coding/snmp
+        run: ansible-test sanity --docker -v --color
+
+  unit:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: ansible_collections/torie_coding/snmp
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          pip install ansible-core 'pysnmp-lextudio>=6.1,<8' pytest pytest-mock
+
+      - name: Run unit tests
+        working-directory: ansible_collections/torie_coding/snmp
+        run: >-
+          python -m pytest tests/unit/ -v
+          --tb=short
+        env:
+          PYTHONPATH: "${{ github.workspace }}"
+
+  molecule:
+    name: Molecule Integration
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Verify Docker is available
+        run: docker --version
+
+      - name: Install dependencies
+        run: pip install -r requirements-dev.txt
+
+      - name: Build and install collection
+        run: |
+          ansible-galaxy collection build --force
+          ansible-galaxy collection install torie_coding-snmp-*.tar.gz --force
+
+      - name: Build SNMP test agent image
+        run: docker build -t snmp-test-agent:latest -f docker/Dockerfile.snmp-agent docker/
+
+      - name: Run Molecule default scenario
+        run: molecule test -s default
+        env:
+          ANSIBLE_COLLECTIONS_PATH: ~/.ansible/collections
+
+  build:
+    name: Build Collection
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install ansible-core
+        run: pip install ansible-core
+
+      - name: Build collection tarball
+        run: ansible-galaxy collection build --force
+
+      - name: Upload collection artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: collection-tarball
+          path: "torie_coding-snmp-*.tar.gz"
+          retention-days: 7
+
+  pylint:
+    name: Pylint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install pylint ansible-core 'pysnmp-lextudio>=6.1,<8'
+
+      - name: Run pylint on all modules
+        run: >-
+          pylint plugins/modules/snmp_facts.py
+          plugins/modules/snmp_get.py
+          plugins/modules/snmp_walk.py
+          --disable=C0103,C0209,C0413,R0801,R0913,R0917,R1735,R0914,R1702,W0613,W0718

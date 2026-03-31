@@ -1,0 +1,4 @@
+minor_changes:
+  - snmp_facts - new module for gathering SNMP facts from network devices
+    using native PySNMP. Supports SNMPv2c and SNMPv3 (authNoPriv, authPriv)
+    with configurable authentication and privacy protocols.

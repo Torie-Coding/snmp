@@ -1,0 +1,24 @@
+FROM debian:bookworm-slim
+
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+        snmpd \
+        snmp \
+        libsnmp && \
+    rm -rf /var/lib/apt/lists/*
+
+COPY snmpd.conf /etc/snmp/snmpd.conf
+
+# Create SNMPv3 users.
+# net-snmp requires users to be created via net-snmp-create-v3-user or
+# directly in the persistent storage. Access control (rouser directives)
+# is configured in snmpd.conf, so we omit -ro here.
+RUN net-snmp-create-v3-user -a SHA -A authpass123456 -x AES -X privpass123456 testuser && \
+    net-snmp-create-v3-user -a SHA-256 -A authpass123456 -x AES -X privpass123456 testuser256
+
+EXPOSE 161/udp
+
+# Do NOT use -C here: snmpd must read both the main config and the
+# persistent config (/var/lib/snmp/snmpd.conf) where createUser directives
+# were placed by net-snmp-create-v3-user at build time.
+CMD ["/usr/sbin/snmpd", "-f", "-Lo"]

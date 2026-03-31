@@ -1,0 +1,133 @@
+---
+name: Release
+
+# ──────────────────────────────────────────────────────────────
+# Triggers:
+#   1. Tag push (v*) — full real release (build, GitHub Release,
+#      Galaxy publish). This is the production release path.
+#   2. workflow_dispatch — manual dry-run by default.
+#      Both publish flags default to false so nothing is published.
+#      Toggle the booleans in the GitHub UI to selectively enable
+#      GitHub Release creation or Galaxy publishing.
+# ──────────────────────────────────────────────────────────────
+on:
+  push:
+    tags:
+      - "v*"
+
+  workflow_dispatch:
+    inputs:
+      publish_to_galaxy:
+        description: "Publish the collection to Ansible Galaxy"
+        required: false
+        type: boolean
+        default: false
+      create_github_release:
+        description: "Create a GitHub Release with the built tarball"
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Build & Publish
+    runs-on: ubuntu-latest
+    environment: release
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install ansible-core
+        run: pip install ansible-core
+
+      # ── Version validation ───────────────────────────────────
+      # Step A: Always verify galaxy.yml contains a well-formed
+      #         semantic version (X.Y.Z). Runs on every trigger
+      #         so dry-runs still catch a broken version field.
+      - name: Validate galaxy.yml version format
+        run: |
+          GALAXY_VERSION=$(python -c "
+          import yaml, sys
+          with open('galaxy.yml') as f:
+              data = yaml.safe_load(f)
+          print(data.get('version', ''))
+          ")
+          if [ -z "$GALAXY_VERSION" ]; then
+            echo "ERROR: 'version' key is missing or empty in galaxy.yml"
+            exit 1
+          fi
+          if ! echo "$GALAXY_VERSION" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+$'; then
+            echo "ERROR: galaxy.yml version '$GALAXY_VERSION' is not valid semver (expected X.Y.Z)"
+            exit 1
+          fi
+          echo "galaxy.yml version is valid: $GALAXY_VERSION"
+
+      # Step B: On a tag push, additionally verify the galaxy.yml
+      #         version matches the Git tag (without leading 'v').
+      - name: Validate version matches tag
+        if: github.event_name == 'push'
+        run: |
+          TAG_VERSION="${GITHUB_REF_NAME#v}"
+          GALAXY_VERSION=$(python -c "
+          import yaml, sys
+          with open('galaxy.yml') as f:
+              data = yaml.safe_load(f)
+          print(data['version'])
+          ")
+          if [ "$TAG_VERSION" != "$GALAXY_VERSION" ]; then
+            echo "ERROR: Tag version ($TAG_VERSION) does not match galaxy.yml version ($GALAXY_VERSION)"
+            exit 1
+          fi
+          echo "Version match: $TAG_VERSION"
+
+      - name: Validate CHANGELOG.rst exists
+        run: |
+          if [ ! -s CHANGELOG.rst ]; then
+            echo "ERROR: CHANGELOG.rst is missing or empty."
+            echo "Run 'antsibull-changelog release' and commit before tagging."
+            exit 1
+          fi
+
+      - name: Build collection tarball
+        run: ansible-galaxy collection build --force
+
+      # ── Artifact upload ──────────────────────────────────────
+      # Always upload the built tarball as a workflow artifact so
+      # it can be inspected after any run (dry-run or real).
+      - name: Upload collection artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: collection-tarball
+          path: "torie_coding-snmp-*.tar.gz"
+
+      # ── GitHub Release ───────────────────────────────────────
+      # Created automatically on every tag push (real release).
+      # On manual runs it is skipped unless create_github_release
+      # is explicitly set to true.
+      - name: Create GitHub Release
+        if: >-
+          github.event_name == 'push'
+          || inputs.create_github_release == true
+        uses: softprops/action-gh-release@v2
+        with:
+          files: "torie_coding-snmp-*.tar.gz"
+          generate_release_notes: true
+
+      # ── Galaxy publish ───────────────────────────────────────
+      # Publishes automatically on every tag push (real release).
+      # On manual runs it is skipped unless publish_to_galaxy is
+      # explicitly set to true.
+      - name: Publish to Ansible Galaxy
+        if: >-
+          github.event_name == 'push'
+          || inputs.publish_to_galaxy == true
+        run: >-
+          ansible-galaxy collection publish
+          torie_coding-snmp-*.tar.gz
+          --api-key "${{ secrets.GALAXY_API_KEY }}"
