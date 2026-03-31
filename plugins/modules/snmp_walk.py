@@ -15,7 +15,7 @@ DOCUMENTATION = r"""
 ---
 module: snmp_walk
 short_description: Walk one or more SNMP OID subtrees
-version_added: "0.2.0"
+version_added: "1.0.0"
 description:
   - Walks one or more OID subtrees using SNMP GETBULK and returns all
     OID/value pairs found beneath the given root OIDs.

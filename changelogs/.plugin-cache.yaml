@@ -1,0 +1,34 @@
+objects:
+  role: {}
+plugins:
+  become: {}
+  cache: {}
+  callback: {}
+  cliconf: {}
+  connection: {}
+  filter: {}
+  httpapi: {}
+  inventory: {}
+  lookup: {}
+  module:
+    snmp_facts:
+      description: Gather SNMP facts from a remote device
+      name: snmp_facts
+      namespace: ''
+      version_added: 0.1.0
+    snmp_get:
+      description: Perform targeted SNMP GET requests for specific OIDs
+      name: snmp_get
+      namespace: ''
+      version_added: 1.0.0
+    snmp_walk:
+      description: Walk one or more SNMP OID subtrees
+      name: snmp_walk
+      namespace: ''
+      version_added: 1.0.0
+  netconf: {}
+  shell: {}
+  strategy: {}
+  test: {}
+  vars: {}
+version: 1.0.0

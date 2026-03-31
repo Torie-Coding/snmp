@@ -15,7 +15,7 @@ DOCUMENTATION = r"""
 ---
 module: snmp_get
 short_description: Perform targeted SNMP GET requests for specific OIDs
-version_added: "0.2.0"
+version_added: "1.0.0"
 description:
   - Sends SNMP GET requests for one or more explicit OIDs and returns the
     raw results as a list and as a dictionary keyed by OID.

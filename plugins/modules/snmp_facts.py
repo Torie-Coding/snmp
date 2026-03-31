@@ -94,7 +94,7 @@ options:
     type: list
     elements: str
     default: ["system", "interfaces", "ipv4"]
-    version_added: "0.2.0"
+    version_added: "1.0.0"
 author:
   - Torie-Coding (@Torie-Coding)
 """
