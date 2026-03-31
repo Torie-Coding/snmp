@@ -15,11 +15,15 @@ Before the first release, complete these steps:
 - On galaxy.ansible.com → **Preferences** → **API Token** → **Generate**.
 - Copy the token securely.
 
-### 3. GitHub Repository Secret
+### 3. GitHub Release Environment and Secret
 
-- In the GitHub repo → **Settings** → **Secrets and variables** → **Actions** → **New repository secret**.
-- Name: `GALAXY_API_KEY`
-- Value: the Galaxy API token from step 2.
+- In the GitHub repo, go to **Settings** → **Environments**.
+- Create an environment named `release` if it does not already exist.
+- Open the `release` environment and add a new environment secret:
+  - Name: `GALAXY_API_KEY`
+  - Value: the Galaxy API token from step 2.
+
+This matches the release workflow, which runs with `environment: release`.
 
 ### 4. Recommended Branch Protection
 
@@ -28,7 +32,7 @@ Before the first release, complete these steps:
 | Require PR reviews on `main` | ≥ 1 reviewer | Prevent broken code from reaching main |
 | Require status checks | lint, sanity, unit, molecule, build | All CI must pass before merge |
 | Restrict tag creation | Admins/maintainers only | Prevent unauthorized releases |
-| GitHub Environment `release` | Optional: add required reviewers | Manual approval gate before Galaxy publish |
+| GitHub Environment `release` | Recommended: add required reviewers and store `GALAXY_API_KEY` there | Manual approval gate and scoped secret for Galaxy publish |
 | `GITHUB_TOKEN` permissions | `contents: write` in release workflow | Required for creating GitHub Releases |
 
 ## Release Workflow
